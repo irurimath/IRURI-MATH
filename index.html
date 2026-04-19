@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRURI MATH — 강사 입력 폼</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --main:   #0D2B1F;
+  --acc:    #B8972A;
+  --acc-lt: #F5E6C0;
+  --green:  #1A6B45;
+  --line:   #DDD8CC;
+  --cream:  #FAF8F3;
+  --ink:    #1C1C1E;
+  --muted:  #6B7280;
+  --white:  #FFFFFF;
+  --red:    #8B2020;
+  --blue:   #1A4A7A;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #E8EDE8;
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 8mm 4mm 16mm;
+}
+
+.card {
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  overflow: hidden;
+}
+
+/* 헤더 */
+.form-header {
+  background: var(--main);
+  padding: 6mm 8mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+.form-header-brand { font-size: 8.5pt; letter-spacing: 2px; color: var(--acc); font-weight: 500; }
+.form-header-sub { font-size: 7pt; color: rgba(255,255,255,0.35); margin-top: 1mm; }
+.form-header-title { font-size: 10pt; color: rgba(255,255,255,0.6); font-weight: 300; }
+
+/* 섹션 */
+.form-body { padding: 6mm 8mm 8mm; }
+.section { margin-bottom: 6mm; }
+.section-title {
+  font-size: 7.5pt; font-weight: 700; letter-spacing: 1.5px;
+  color: var(--main); text-transform: uppercase;
+  padding-bottom: 2mm; border-bottom: 1.5px solid var(--main);
+  margin-bottom: 4mm;
+}
+
+/* 필드 */
+.field { margin-bottom: 4mm; }
+.field label {
+  display: block; font-size: 8.5pt; font-weight: 500;
+  color: var(--ink); margin-bottom: 1.5mm;
+}
+.field label .req { color: var(--red); margin-left: 2px; }
+.field label .hint { font-size: 7.5pt; font-weight: 400; color: var(--muted); margin-left: 4px; }
+
+select, input[type="text"], textarea {
+  width: 100%; padding: 8px 10px;
+  border: 1px solid var(--line); border-radius: 6px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 9pt; color: var(--ink);
+  background: var(--cream);
+  outline: none; transition: border-color .15s;
+  appearance: none; -webkit-appearance: none;
+}
+select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+select:focus, input:focus, textarea:focus { border-color: var(--acc); background: #fff; }
+select:disabled { opacity: 0.45; cursor: not-allowed; }
+textarea { resize: vertical; min-height: 72px; line-height: 1.7; }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+.field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3mm; }
+
+/* 버전 태그 */
+.version-info {
+  font-size: 8pt; color: var(--blue);
+  background: #EEF4FF; border: 1px solid #B8D0F5;
+  border-radius: 4px; padding: 5px 8px;
+  margin-top: 2mm; display: none;
+  line-height: 1.6;
+}
+
+/* 오답 다중선택 */
+.q-grid {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 8px; background: var(--cream);
+  border: 1px solid var(--line); border-radius: 6px;
+}
+.q-btn {
+  width: 36px; height: 36px;
+  border: 1.5px solid var(--line); border-radius: 6px;
+  background: var(--white); font-size: 9pt; font-weight: 500;
+  cursor: pointer; transition: all .12s;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); user-select: none;
+}
+.q-btn:hover { border-color: var(--acc); color: var(--acc); }
+.q-btn.selected { background: var(--red); border-color: var(--red); color: var(--white); font-weight: 700; }
+.q-btn.disabled { opacity: 0.25; pointer-events: none; }
+.q-note { font-size: 7.5pt; color: var(--muted); margin-top: 2mm; }
+
+/* 점수 표시 */
+.score-display {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; background: var(--cream);
+  border: 1px solid var(--line); border-radius: 6px;
+  font-size: 9pt; color: var(--muted);
+}
+.score-val { font-size: 14pt; font-weight: 700; color: var(--main); }
+.score-total { font-size: 9pt; color: var(--muted); }
+
+/* 제출 버튼 */
+.btn-submit {
+  width: 100%; padding: 12px;
+  background: var(--main); border: none; border-radius: 8px;
+  color: var(--white); font-family: 'Noto Sans KR', sans-serif;
+  font-size: 10.5pt; font-weight: 700; cursor: pointer;
+  transition: opacity .15s; margin-top: 2mm; letter-spacing: 0.5px;
+}
+.btn-submit:hover { opacity: 0.88; }
+.btn-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* 완료 화면 */
+.success {
+  display: none; text-align: center;
+  padding: 12mm 8mm;
+}
+.success-icon { font-size: 36pt; margin-bottom: 4mm; }
+.success-title { font-size: 16pt; font-weight: 700; color: var(--main); margin-bottom: 2mm; }
+.success-sub { font-size: 9pt; color: var(--muted); line-height: 1.7; margin-bottom: 6mm; }
+.btn-again {
+  padding: 10px 24px; background: var(--cream);
+  border: 1px solid var(--line); border-radius: 6px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 9pt; cursor: pointer; color: var(--ink);
+}
+
+/* 로딩 */
+.loading { display: none; text-align: center; padding: 6mm; font-size: 9pt; color: var(--muted); }
+
+/* 경고 */
+.warn { font-size: 8pt; color: var(--red); margin-top: 1.5mm; display: none; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="form-header">
+    <div>
+      <div class="form-header-brand">IRURI EDUCATION</div>
+      <div class="form-header-sub">이루리학원 수학관</div>
+    </div>
+    <div style="position:absolute;left:50%;transform:translateX(-50%);text-align:center;">
+      <div style="font-size:11pt;font-weight:500;color:rgba(255,255,255,0.85);letter-spacing:2px;">월간 진단평가</div>
+      <div style="font-size:7pt;color:rgba(255,255,255,0.3);margin-top:1mm;letter-spacing:1px;">MONTHLY DIAGNOSIS</div>
+    </div>
+    <div class="form-header-title">강사 입력 폼</div>
+  </div>
+
+  <div class="form-body" id="form-body">
+
+    <!-- ① 강사 / 학생 -->
+    <div class="section">
+      <div class="section-title">01 &nbsp;강사 &amp; 학생</div>
+
+      <div class="field">
+        <label>강사명 <span class="req">*</span></label>
+        <select id="sel-instructor" onchange="onInstructorChange()">
+          <option value="">— 선택 —</option>
+          <option>김민지</option>
+          <option>김상현</option>
+          <option>김선식</option>
+          <option>박재현</option>
+          <option>서현우</option>
+          <option>윤영찬</option>
+          <option>이주영</option>
+          <option>조예나</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>학생 선택 <span class="req">*</span> <span class="hint">강사 선택 후 활성화</span></label>
+        <select id="sel-student" disabled onchange="onStudentChange()">
+          <option value="">— 강사를 먼저 선택하세요 —</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 제출 모드 선택 -->
+    <div id="mode-select-wrap" style="display:none;margin:0 0 3mm;">
+      <div style="display:flex;gap:2.5mm;">
+        <label style="flex:1;display:flex;align-items:center;gap:2.5mm;cursor:pointer;
+          padding:3.5mm 4mm;background:#E8F7F3;border-radius:10px;border:2px solid #3DBFA0;">
+          <input type="radio" name="submit-mode" id="mode-full" value="full" checked onchange="onModeChange()"
+            style="accent-color:#3DBFA0;flex-shrink:0;">
+          <span style="font-size:8.5pt;line-height:1.6;color:#0D2B1F;">
+            <strong style="display:block;">📝 시험 시행 + 코멘트</strong>
+            <span style="font-size:7.5pt;color:#717171;">점수·오답·코멘트 모두 입력</span>
+          </span>
+        </label>
+        <label style="flex:1;display:flex;align-items:center;gap:2.5mm;cursor:pointer;
+          padding:3.5mm 4mm;background:#F7F4EE;border-radius:10px;border:2px solid #E2DDD6;"
+          id="mode-comment-label">
+          <input type="radio" name="submit-mode" id="mode-comment" value="comment" onchange="onModeChange()"
+            style="accent-color:#3DBFA0;flex-shrink:0;">
+          <span style="font-size:8.5pt;line-height:1.6;color:#0D2B1F;">
+            <strong style="display:block;">💬 코멘트만 제출</strong>
+            <span style="font-size:7.5pt;color:#717171;">시험 미시행 · 코멘트·방향만 입력</span>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <!-- ② 시행 정보 -->
+    <div class="section" id="section-exam-info">
+      <div class="section-title">02 &nbsp;시행 정보</div>
+
+      <!-- 회차 선택: comment_only 모드에서도 항상 표시 -->
+      <div class="field-row" id="field-round-row">
+        <div class="field">
+          <label>시행 회차 <span class="req">*</span></label>
+          <select id="sel-round" onchange="onRoundChange()">
+            <option value="">— 선택 —</option>
+          </select>
+        </div>
+        <!-- 버전: comment_only 모드에서 숨김 -->
+        <div class="field" id="field-version-wrap">
+          <label>시험지 버전 <span class="req">*</span> <span class="hint">A=심화 / B=기본 · 회차 선택 후 활성화</span></label>
+          <select id="sel-version" disabled>
+            <option value="">— 회차 선택 후 —</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 특수 시행 체크박스 -->
+      <div id="special-case-wrap" style="display:none;margin-top:3mm;">
+        <label style="display:flex;align-items:flex-start;gap:2.5mm;cursor:pointer;padding:3mm 4mm;background:#FEF3DC;border-radius:10px;border:1.5px solid #F5A623;">
+          <input type="checkbox" id="chk-special-case" onchange="onSpecialCaseChange()"
+            style="margin-top:1mm;accent-color:#F5A623;flex-shrink:0;">
+          <span style="font-size:8.5pt;line-height:1.7;color:#92400E;">
+            <strong style="display:block;margin-bottom:0.5mm;">⚠️ 특수 시행</strong>
+            학생의 학년과 다른 회차 시험지로 시행한 경우 체크해주세요.<br>
+            <span style="font-size:7.5pt;color:#B45309;">체크 시 시행 학년을 선택하고 전체 회차가 활성화됩니다.</span>
+          </span>
+        </label>
+        <!-- 특수 시행 학년 선택 (체크 시에만 표시) -->
+        <div id="special-grade-wrap" style="display:none;margin-top:2.5mm;padding:3mm 4mm;background:#FEF3DC;border-radius:10px;border:1.5px solid #F5A623;">
+          <label style="font-size:8pt;font-weight:700;color:#92400E;display:block;margin-bottom:2mm;">📋 시행한 시험지 학년 <span style="color:#E8604A">*</span></label>
+          <div style="display:flex;gap:2.5mm;">
+            <label style="flex:1;display:flex;align-items:center;gap:2mm;cursor:pointer;padding:2.5mm 3mm;background:#fff;border-radius:8px;border:1.5px solid #E2DDD6;" id="sp-grade-1-label">
+              <input type="radio" name="special-grade" id="sp-grade-1" value="1" onchange="onSpecialGradeChange()"
+                style="accent-color:#F5A623;"> <span style="font-size:8.5pt;font-weight:600;">고1 시험지</span>
+            </label>
+            <label style="flex:1;display:flex;align-items:center;gap:2mm;cursor:pointer;padding:2.5mm 3mm;background:#fff;border-radius:8px;border:1.5px solid #E2DDD6;" id="sp-grade-2-label">
+              <input type="radio" name="special-grade" id="sp-grade-2" value="2" onchange="onSpecialGradeChange()"
+                style="accent-color:#F5A623;"> <span style="font-size:8.5pt;font-weight:600;">고2 시험지</span>
+            </label>
+            <label style="flex:1;display:flex;align-items:center;gap:2mm;cursor:pointer;padding:2.5mm 3mm;background:#fff;border-radius:8px;border:1.5px solid #E2DDD6;" id="sp-grade-3-label">
+              <input type="radio" name="special-grade" id="sp-grade-3" value="3" onchange="onSpecialGradeChange()"
+                style="accent-color:#F5A623;"> <span style="font-size:8.5pt;font-weight:600;">고3 시험지</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="version-info" id="version-info"></div>
+    </div>
+
+    <!-- ③ 시험 결과 -->
+    <div class="section" id="section-exam-result">
+      <div class="section-title">03 &nbsp;시험 결과</div>
+
+      <div class="field">
+        <label>총 문항 수 <span class="req">*</span></label>
+        <select id="sel-total" onchange="onTotalChange()">
+          <option value="">— 선택 —</option>
+          <option value="6">6문항</option>
+          <option value="7">7문항</option>
+          <option value="8">8문항</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>오답 문항 번호 <span class="hint">해당 번호를 모두 선택 (없으면 선택 안함)</span></label>
+        <div class="q-grid" id="q-grid">
+          <div style="font-size:8.5pt;color:var(--muted);padding:4px">총 문항 수를 먼저 선택해주세요</div>
+        </div>
+        <div class="q-note" id="q-note"></div>
+      </div>
+
+      <div class="field">
+        <label>정답 / 총 문항</label>
+        <div class="score-display">
+          <span class="score-val" id="score-correct">—</span>
+          <span class="score-total" id="score-total-disp">/ — 개</span>
+          <span style="margin-left:auto;font-size:8pt;color:var(--muted)" id="score-pct"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ 강사 코멘트 -->
+    <div class="section">
+      <div class="section-title">04 &nbsp;강사 코멘트</div>
+
+      <div class="field">
+        <label>이달 총평 <span class="req">*</span><span class="hint" style="color:var(--green);font-weight:500"> → 리포트 강사 코멘트란에 그대로 반영</span></label>
+        <textarea id="txt-comment" placeholder="이번 시행 기간 수업 태도, 성취, 인상적인 점과&#10;진단평가 결과와 관련하여 하고 싶은 말을 자유롭게 적어주세요."></textarea>
+      </div>
+
+      <div class="field">
+        <label>다음 회차 중점 방향 <span class="req">*</span></label>
+        <textarea id="txt-direction" placeholder="다음 시행까지 집중할 내용이나 목표를 입력해주세요." style="min-height:56px"></textarea>
+      </div>
+
+      <div class="field">
+        <label>특이사항 <span class="hint">선택 입력</span><span class="hint" style="color:var(--red);font-weight:500"> · 리포트에 포함되지 않음</span></label>
+        <textarea id="txt-special" placeholder="진단평가 총괄자 확인이 필요한 내용을 기재해주세요." style="min-height:56px"></textarea>
+      </div>
+    </div>
+
+    <div class="warn" id="warn-msg">필수 항목을 모두 입력해주세요.</div>
+    <div class="loading" id="loading">저장 중...</div>
+    <button class="btn-submit" onclick="submitForm()">제출하기</button>
+
+  </div><!-- /form-body -->
+
+  <!-- 완료 화면 -->
+  <div class="success" id="success">
+    <div class="success-icon">✅</div>
+    <div class="success-title">제출 완료</div>
+    <div class="success-sub" id="success-msg"></div>
+    <button class="btn-again" onclick="resetForm()">다음 학생 입력하기</button>
+  </div>
+
+</div><!-- /card -->
+
+<script>
+// ══════════════════════════════════════════
+//  데이터
+// ══════════════════════════════════════════
+
+// 학생 목록 — Apps Script에서 실시간 로드 (아래 loadStudents 참조)
+let STUDENTS = {};
+
+const ROUNDS = [
+  { id:"고3-1",  label:"고3 1회",   grade:3,  dates:"3/30–4/5",   versions:["A","B","확통"] },
+  { id:"고12-1", label:"고1·2 1회", grade:12, dates:"4/13–4/19",  versions:["A","B","확통"] },
+  { id:"고3-2",  label:"고3 2회",   grade:3,  dates:"4/27–5/3",   versions:["A","B","확통"] },
+  { id:"고12-2", label:"고1·2 2회", grade:12, dates:"5/11–5/17",  versions:["A","B","확통"] },
+  { id:"고3-3",  label:"고3 3회",   grade:3,  dates:"5/25–5/31",  versions:["A","B","확통"] },
+  { id:"고12-3", label:"고1·2 3회", grade:12, dates:"6/8–6/14",   versions:["A","B","확통"] },
+  { id:"고3-4",  label:"고3 4회",   grade:3,  dates:"6/22–6/28",  versions:["A","B","확통"] },
+  { id:"고12-4", label:"고1·2 4회", grade:12, dates:"7/6–7/12",   versions:["A","B","확통"] },
+  { id:"고3-5",  label:"고3 5회",   grade:3,  dates:"7/20–7/26",  versions:["A","B","확통"] },
+  { id:"고12-5", label:"고1·2 5회", grade:12, dates:"8/3–8/9",    versions:["A","B","확통"] },
+  { id:"고3-6",  label:"고3 6회",   grade:3,  dates:"8/17–8/23",  versions:["A","B","확통"] },
+  { id:"고12-6", label:"고1·2 6회", grade:12, dates:"9/7–9/13",   versions:["A","B"] },
+];
+
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbyYvhYogtDVKnCF3DRVdNI51ssBwXQY8hOr5cUxcu4cJn5OKzJEeBNlXmlWc4kFA3Kh/exec";
+
+// ══ 상태 ══
+let selectedWrong = new Set();
+let currentTotal = 0;
+
+// ══════════════════════════════════════════
+//  초기화 — 학생 목록 실시간 로드
+// ══════════════════════════════════════════
+async function init() {
+  // 회차 드롭다운 먼저 채우기
+  const selRound = document.getElementById('sel-round');
+  ROUNDS.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.id;
+    opt.textContent = `${r.label}  (${r.dates})`;
+    selRound.appendChild(opt);
+  });
+
+  // 강사 드롭다운 로딩 표시
+  const selInst = document.getElementById('sel-instructor');
+  selInst.innerHTML = '<option value="">⏳ 학생 목록 불러오는 중...</option>';
+  selInst.disabled = true;
+
+  await loadStudents();
+}
+init();
+
+// Apps Script GET → 학생 목록 로드
+async function loadStudents() {
+  const selInst = document.getElementById('sel-instructor');
+  try {
+    const res  = await fetch(`${SHEET_URL}?action=getStudents`);
+    const json = await res.json();
+
+    if (json.result === 'success' && json.students) {
+      STUDENTS = json.students;
+
+      // 강사 드롭다운 재구성
+      selInst.innerHTML = '<option value="">— 선택 —</option>';
+      Object.keys(STUDENTS).sort().forEach(inst => {
+        const opt = document.createElement('option');
+        opt.value = inst;
+        opt.textContent = inst;
+        selInst.appendChild(opt);
+      });
+      selInst.disabled = false;
+    } else {
+      throw new Error('응답 오류');
+    }
+  } catch(e) {
+    // 로드 실패 시 기존 고정 목록으로 폴백
+    console.warn('학생 목록 로드 실패, 기본값 사용:', e);
+    selInst.innerHTML = '<option value="">— 선택 —</option>';
+    ['김민지','김상현','김선식','박재현','서현우','윤영찬','이주영','조예나'].forEach(inst => {
+      const opt = document.createElement('option');
+      opt.value = inst; opt.textContent = inst;
+      selInst.appendChild(opt);
+    });
+    selInst.disabled = false;
+
+    // 상단에 재시도 안내 표시
+    const warn = document.getElementById('warn-msg');
+    warn.textContent = '⚠️ 학생 목록 로드 실패. 잠시 후 새로고침 해주세요.';
+    warn.style.display = 'block';
+  }
+}
+
+// ══════════════════════════════════════════
+//  이벤트 핸들러
+// ══════════════════════════════════════════
+
+function onInstructorChange() {
+  const inst = document.getElementById('sel-instructor').value;
+  const selSt = document.getElementById('sel-student');
+  selSt.innerHTML = '<option value="">— 선택 —</option>';
+
+  if (!inst) { selSt.disabled = true; return; }
+
+  const list = STUDENTS[inst] || [];
+  // 학년별 그룹으로 표시
+  const grades = {};
+  list.forEach(s => {
+    if (!grades[s.grade]) grades[s.grade] = [];
+    grades[s.grade].push(s);
+  });
+
+  [1, 2, 3].forEach(g => {
+    if (!grades[g]) return;
+    const grp = document.createElement('optgroup');
+    grp.label = `고${g}학년`;
+    grades[g].forEach(s => {
+      const opt = document.createElement('option');
+      // value: 동명이인 구분을 위해 KEY 사용 (없으면 이름 폴백)
+      opt.value = s.key || s.name;
+      // 데이터 속성: 이름 및 학교(동명이인 추적용)
+      opt.dataset.name   = s.name;
+      opt.dataset.school = s.school || '';
+      opt.dataset.grade  = s.grade || '';
+      // 모든 학생을 '이름 (학교학년)' 형식으로 표기
+      const schoolLabel = s.school ? `${s.school}${s.grade || ''}` : '';
+      opt.textContent = schoolLabel ? `${s.name} (${schoolLabel})` : s.name;
+      grp.appendChild(opt);
+    });
+    selSt.appendChild(grp);
+  });
+
+  selSt.disabled = false;
+  updateRoundFilter();
+}
+
+function onStudentChange() {
+  updateRoundFilter();
+  // 학생 선택 시 제출 모드 선택기 표시
+  const sName = document.getElementById('sel-student').value;
+  document.getElementById('mode-select-wrap').style.display = sName ? 'block' : 'none';
+  // 모드 초기화
+  document.getElementById('mode-full').checked = true;
+  onModeChange();
+}
+
+// 제출 모드 전환 (시행+코멘트 / 코멘트만)
+function onModeChange() {
+  const isCommentOnly = document.getElementById('mode-comment').checked;
+  const examInfo   = document.getElementById('section-exam-info');
+  const examResult = document.getElementById('section-exam-result');
+  const commentLabel = document.getElementById('mode-comment-label');
+
+  // 코멘트 전용 모드: 회차 선택은 유지, 버전/특수시행/결과 섹션만 숨김
+  examInfo.style.display   = '';  // section-exam-info 항상 표시 (회차 선택 포함)
+  examResult.style.display = isCommentOnly ? 'none' : '';
+  // 버전 선택, 특수시행 숨김/표시
+  const versionWrap  = document.getElementById('field-version-wrap');
+  const specialWrap  = document.getElementById('special-case-wrap');
+  if (versionWrap) versionWrap.style.display  = isCommentOnly ? 'none' : '';
+  if (specialWrap) specialWrap.style.display  = isCommentOnly ? 'none' : '';
+
+  // 선택된 라디오 스타일 업데이트
+  const fullLabel = document.getElementById('mode-full').closest('label');
+  if (isCommentOnly) {
+    commentLabel.style.background = '#E8F7F3';
+    commentLabel.style.borderColor = '#3DBFA0';
+    fullLabel.style.background = '#F7F4EE';
+    fullLabel.style.borderColor = '#E2DDD6';
+  } else {
+    fullLabel.style.background = '#E8F7F3';
+    fullLabel.style.borderColor = '#3DBFA0';
+    commentLabel.style.background = '#F7F4EE';
+    commentLabel.style.borderColor = '#E2DDD6';
+  }
+}
+
+// 학생 학년에 맞는 회차만 표시
+function updateRoundFilter() {
+  const inst  = document.getElementById('sel-instructor').value;
+  const sVal  = document.getElementById('sel-student').value;  // 이제 KEY (또는 이름)
+  const selR  = document.getElementById('sel-round');
+  const specialWrap = document.getElementById('special-case-wrap');
+  const isSpecial = document.getElementById('chk-special-case')?.checked;
+
+  if (!sVal) { specialWrap.style.display = 'none'; return; }
+
+  // STUDENTS는 {강사명: [{key, name, school, grade}...]} 형태
+  const foundStudent = (STUDENTS[inst] || []).find(s => (s.key || s.name) === sVal);
+  const studentGrade = foundStudent?.grade;
+  if (!studentGrade) return;
+
+  // 특수 시행 시 선택된 학년 기준, 아니면 학생 학년 기준
+  const specialGrade = getSpecialGrade();
+  const targetGrade  = (isSpecial && specialGrade) ? specialGrade : studentGrade;
+
+  Array.from(selR.options).forEach(opt => {
+    if (!opt.value) return;
+    const round = ROUNDS.find(r => r.id === opt.value);
+    if (!round) return;
+    const match = round.grade === 3
+      ? targetGrade === 3
+      : [1, 2].includes(targetGrade);
+    opt.disabled = !match;
+    opt.style.color = match ? '' : '#ccc';
+  });
+
+  // 현재 선택된 회차가 비활성화됐으면 초기화
+  const selOpt = selR.options[selR.selectedIndex];
+  if (selOpt && selOpt.disabled) {
+    selR.value = '';
+    onRoundChange();
+  }
+
+  specialWrap.style.display = 'block';
+}
+
+// 선택된 특수시행 학년 반환
+function getSpecialGrade() {
+  const checked = document.querySelector('input[name="special-grade"]:checked');
+  return checked ? parseInt(checked.value) : null;
+}
+
+// 특수 시행 체크박스 변경 시
+function onSpecialCaseChange() {
+  const isSpecial = document.getElementById('chk-special-case').checked;
+  const gradeWrap = document.getElementById('special-grade-wrap');
+
+  // 학년 선택 영역 표시/숨김
+  gradeWrap.style.display = isSpecial ? 'block' : 'none';
+
+  // 체크 해제 시 학년 선택 초기화
+  if (!isSpecial) {
+    document.querySelectorAll('input[name="special-grade"]').forEach(r => r.checked = false);
+    ['1','2','3'].forEach(g => {
+      const label = document.getElementById(`sp-grade-${g}-label`);
+      if (label) { label.style.background = '#fff'; label.style.borderColor = '#E2DDD6'; }
+    });
+  }
+
+  updateRoundFilter();
+  document.getElementById('sel-round').value = '';
+  onRoundChange();
+}
+
+// 특수 시행 학년 선택 변경 시
+function onSpecialGradeChange() {
+  const grade = getSpecialGrade();
+  // 선택된 라디오 스타일 업데이트
+  ['1','2','3'].forEach(g => {
+    const label = document.getElementById(`sp-grade-${g}-label`);
+    if (!label) return;
+    if (parseInt(g) === grade) {
+      label.style.background = '#FEF3DC';
+      label.style.borderColor = '#F5A623';
+    } else {
+      label.style.background = '#fff';
+      label.style.borderColor = '#E2DDD6';
+    }
+  });
+  updateRoundFilter();
+  document.getElementById('sel-round').value = '';
+  onRoundChange();
+}
+
+function onRoundChange() {
+  const roundId = document.getElementById('sel-round').value;
+  const selV    = document.getElementById('sel-version');
+  const infoEl  = document.getElementById('version-info');
+
+  selV.innerHTML = '<option value="">— 선택 —</option>';
+  infoEl.style.display = 'none';
+
+  if (!roundId) { selV.disabled = true; return; }
+
+  const round = ROUNDS.find(r => r.id === roundId);
+  if (!round) { selV.disabled = true; return; }
+
+  round.versions.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v === 'A' ? 'A (심화)' : v === 'B' ? 'B (기본)' : v === '확통' ? '확률과통계' : v;
+    selV.appendChild(opt);
+  });
+  selV.disabled = false;
+
+  // 버전 안내 (선택과목 회차일 경우)
+  if (round.versionNote) {
+    infoEl.textContent = '📌 ' + round.versionNote;
+    infoEl.style.display = 'block';
+  }
+}
+
+function onTotalChange() {
+  currentTotal = parseInt(document.getElementById('sel-total').value) || 0;
+  selectedWrong.clear();
+  renderQGrid();
+  updateScore();
+}
+
+function renderQGrid() {
+  const grid = document.getElementById('q-grid');
+  grid.innerHTML = '';
+
+  if (!currentTotal) {
+    grid.innerHTML = '<div style="font-size:8.5pt;color:var(--muted);padding:4px">총 문항 수를 먼저 선택해주세요</div>';
+    document.getElementById('q-note').textContent = '';
+    return;
+  }
+
+  for (let i = 1; i <= currentTotal; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'q-btn';
+    btn.textContent = i;
+    btn.dataset.q = i;
+    btn.onclick = () => toggleQ(i, btn);
+    grid.appendChild(btn);
+  }
+  document.getElementById('q-note').textContent = '오답 문항만 선택하세요. 다시 누르면 해제됩니다.';
+}
+
+function toggleQ(num, btn) {
+  if (selectedWrong.has(num)) {
+    selectedWrong.delete(num);
+    btn.classList.remove('selected');
+  } else {
+    selectedWrong.add(num);
+    btn.classList.add('selected');
+  }
+  updateScore();
+}
+
+function updateScore() {
+  const wrongCnt   = selectedWrong.size;
+  const correctCnt = currentTotal - wrongCnt;
+  const pct        = currentTotal ? Math.round(correctCnt / currentTotal * 100) : 0;
+
+  document.getElementById('score-correct').textContent =
+    currentTotal ? correctCnt : '—';
+  document.getElementById('score-total-disp').textContent =
+    currentTotal ? `/ ${currentTotal}개` : '/ — 개';
+  document.getElementById('score-pct').textContent =
+    currentTotal ? `(${pct}%)` : '';
+}
+
+// ══════════════════════════════════════════
+//  제출
+// ══════════════════════════════════════════
+function validate() {
+  const isCommentOnly = document.getElementById('mode-comment').checked;
+  const base = [
+    document.getElementById('sel-instructor').value,
+    document.getElementById('sel-student').value,
+    document.getElementById('txt-comment').value.trim(),
+    document.getElementById('txt-direction').value.trim(),
+  ];
+  // 회차는 항상 필수 (full/comment_only 공통)
+  base.push(document.getElementById('sel-round').value);
+  if (!isCommentOnly) {
+    base.push(
+      document.getElementById('sel-version').value,
+      document.getElementById('sel-total').value,
+    );
+  }
+  return base.every(v => v !== '' && v !== undefined);
+}
+
+async function submitForm() {
+  const warnEl = document.getElementById('warn-msg');
+  if (!validate()) {
+    warnEl.style.display = 'block';
+    warnEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  warnEl.style.display = 'none';
+
+  const isCommentOnly = document.getElementById('mode-comment').checked;
+  // comment_only도 회차 선택값 사용 (round_label 정확히 저장하기 위해)
+  const roundId  = document.getElementById('sel-round').value;
+  const round    = ROUNDS.find(r => r.id === roundId);
+  const total    = isCommentOnly ? 0 : parseInt(document.getElementById('sel-total').value);
+  const wrong    = isCommentOnly ? [] : [...selectedWrong].sort((a,b) => a-b);
+  const correct  = isCommentOnly ? null : total - wrong.length;
+
+  // 학생 KEY와 이름 분리 (동명이인 구분)
+  // <option value="KEY">에서 value=KEY, dataset.name=실제학생명
+  const selStEl = document.getElementById('sel-student');
+  const selOpt  = selStEl.options[selStEl.selectedIndex];
+  const studentKey  = selStEl.value;                         // KEY (예: 김단아9192)
+  const studentName = selOpt?.dataset.name || studentKey;    // 실제 이름 (예: 김단아)
+
+  const payload = {
+    timestamp:    new Date().toLocaleString('ko-KR'),
+    submit_mode:  isCommentOnly ? 'comment_only' : 'full',  // 제출 모드 구분
+    instructor:   document.getElementById('sel-instructor').value,
+    student:      studentName,         // C열: 학생명 (기존 호환)
+    student_key:  studentKey,          // P열: 학생 KEY (동명이인 구분)
+    round_id:     roundId,
+    round_label:  round?.label || '',
+    round_dates:  round?.dates || '',
+    version:      isCommentOnly ? '' : document.getElementById('sel-version').value,
+    total_q:      isCommentOnly ? '' : total,
+    correct_q:    isCommentOnly ? '' : correct,
+    wrong_q:      isCommentOnly ? '' : wrong.map(n => `Q${n}`).join(', '),
+    comment:      document.getElementById('txt-comment').value.trim(),
+    direction:    document.getElementById('txt-direction').value.trim(),
+    special:      document.getElementById('txt-special').value.trim(),
+    special_case: document.getElementById('chk-special-case')?.checked ? 'Y' : '',
+    special_grade: document.getElementById('chk-special-case')?.checked ? (getSpecialGrade() || '') : '',
+  };
+
+  // Apps Script URL이 설정됐으면 실제 전송
+  if (SHEET_URL !== "여기에_Apps_Script_웹앱_URL_입력") {
+    document.getElementById('loading').style.display = 'block';
+    document.querySelector('.btn-submit').disabled = true;
+    try {
+      await fetch(SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch(e) {
+      console.error('전송 오류:', e);
+    }
+    document.getElementById('loading').style.display = 'none';
+  }
+
+  showSuccess(payload);
+}
+
+function showSuccess(p) {
+  document.getElementById('form-body').style.display = 'none';
+  const el = document.getElementById('success');
+  el.style.display = 'block';
+  document.getElementById('success-msg').innerHTML =
+    `<strong>${p.instructor} 강사 · ${p.student}</strong><br>` +
+    `${p.round_label} (${p.round_dates}) · ${p.version} 버전<br>` +
+    `정답 <strong>${p.correct_q}/${p.total_q}개</strong>` +
+    (p.wrong_q ? ` · 오답 ${p.wrong_q}` : ' · 오답 없음') +
+    `<br><br>입력 내용이 저장되었습니다.`;
+}
+
+function resetForm() {
+  document.getElementById('form-body').style.display = 'block';
+  document.getElementById('success').style.display = 'none';
+  document.getElementById('sel-instructor').value = '';
+  document.getElementById('sel-student').innerHTML = '<option value="">— 강사를 먼저 선택하세요 —</option>';
+  document.getElementById('sel-student').disabled = true;
+  document.getElementById('sel-round').value = '';
+  document.getElementById('sel-version').innerHTML = '<option value="">— 회차 선택 후 —</option>';
+  document.getElementById('sel-version').disabled = true;
+  document.getElementById('sel-total').value = '';
+  document.getElementById('version-info').style.display = 'none';
+  document.getElementById('txt-comment').value = '';
+  document.getElementById('txt-direction').value = '';
+  document.getElementById('txt-special').value = '';
+  document.getElementById('mode-select-wrap').style.display = 'none';
+  document.getElementById('mode-full').checked = true;
+  document.getElementById('section-exam-info').style.display = '';
+  document.getElementById('section-exam-result').style.display = '';
+  // 특수 시행 체크박스 및 학년 초기화
+  const chk = document.getElementById('chk-special-case');
+  if (chk) chk.checked = false;
+  document.getElementById('special-case-wrap').style.display = 'none';
+  document.getElementById('special-grade-wrap').style.display = 'none';
+  document.querySelectorAll('input[name="special-grade"]').forEach(r => r.checked = false);
+  ['1','2','3'].forEach(g => {
+    const label = document.getElementById(`sp-grade-${g}-label`);
+    if (label) { label.style.background = '#fff'; label.style.borderColor = '#E2DDD6'; }
+  });
+  document.querySelector('.btn-submit').disabled = false;
+  selectedWrong.clear(); currentTotal = 0;
+  renderQGrid(); updateScore();
+}
+</script>
+</body>
+</html>
